@@ -4,9 +4,12 @@ import typer
 
 from . import export, overpass, pipeline, storage
 from .config import Settings
+from .garden import cli as garden_cli
 from .google_places import BudgetExceeded
 
 app = typer.Typer(no_args_is_help=True, help="Aziende senza sito: OSM + verifica Google.")
+
+app.add_typer(garden_cli.app, name="garden")
 
 
 def _bbox(area: str, bbox: str | None) -> tuple[float, float, float, float]:
