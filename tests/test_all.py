@@ -108,3 +108,16 @@ def test_export(con, tmp_path):
     pipeline.classify_all(con, FakeSession(alive=["verdi.it"]))
     counts = export.write(con, str(tmp_path / "o.xlsx"))
     assert sum(counts.values()) == 3 and (tmp_path / "o.xlsx").exists()
+
+
+def test_cli_export_takes_positional_path(tmp_path, monkeypatch):
+    from typer.testing import CliRunner
+
+    from mapsleads.cli import app
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("DB_PATH", str(tmp_path / "t.db"))
+    out = tmp_path / "x.xlsx"
+    result = CliRunner().invoke(app, ["export-xlsx", str(out)])
+    assert result.exit_code == 0, result.output
+    assert out.exists()

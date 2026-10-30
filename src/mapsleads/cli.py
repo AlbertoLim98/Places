@@ -65,7 +65,7 @@ def verify(
 
 
 @app.command()
-def export_xlsx(path: str = "leads.xlsx") -> None:
+def export_xlsx(path: str = typer.Argument("leads.xlsx", help="File Excel di output")) -> None:
     """4. Esporta in Excel con le statistiche della run."""
     counts = export.write(storage.connect(Settings().db_path), path)
     typer.echo(f"Scritto {path}: {dict(counts)}")
