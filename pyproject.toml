@@ -13,6 +13,14 @@ dependencies = [
 [project.scripts]
 mapsleads = "mapsleads.cli:app"
 
+[project.optional-dependencies]
+geo = [
+    "geopandas>=1.0",
+    "rasterio>=1.4",
+    "numpy>=1.26",
+    "shapely>=2.0",
+]
+
 [dependency-groups]
 dev = ["pytest>=8.2", "ruff>=0.6"]
 
