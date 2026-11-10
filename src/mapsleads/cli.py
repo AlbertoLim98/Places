@@ -79,9 +79,12 @@ def export_xlsx(path: str = typer.Argument("leads.xlsx", help="File Excel di out
 
 
 @app.command()
-def export_map(path: str = typer.Argument("mappa.html", help="File HTML di output")) -> None:
+def export_map(
+    path: str = typer.Argument("mappa.html", help="File HTML di output"),
+    tile_url: str = typer.Option(mapview.DEFAULT_TILE_URL, help="URL delle tessere di sfondo"),
+) -> None:
     """5. Mappa interattiva (un colore per esito), da aprire nel browser."""
-    n = mapview.write(storage.connect(Settings().db_path), path)
+    n = mapview.write(storage.connect(Settings().db_path), path, tile_url)
     typer.echo(f"Scritta {path} con {n} attività.")
 
 

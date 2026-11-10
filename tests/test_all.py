@@ -198,4 +198,8 @@ def test_map_does_not_use_blocked_osm_tile_server():
 
     html = mapview.render([])
     assert "tile.openstreetmap.org" not in html  # 403s pages opened from file://
-    assert "basemaps.cartocdn.com" in html
+    assert "cartocdn" not in html  # now needs an API key
+    assert "arcgisonline.com" in html
+    assert "https://tiles.example/{z}/{x}/{y}.png" in mapview.render(
+        [], tile_url="https://tiles.example/{z}/{x}/{y}.png"
+    )

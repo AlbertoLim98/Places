@@ -53,3 +53,6 @@ personali; posta nominativa o ricerca dei nomi richiede una valutazione GDPR pri
 ## Mappa
 `uv run mapsleads export-map mappa.html` crea una mappa interattiva (un colore per esito, con
 filtri e conteggi) da aprire nel browser. Serve internet per caricare le tessere della mappa.
+
+Lo sfondo di default è Esri (senza chiave). Per usare un altro fornitore, ad esempio MapTiler con
+una chiave gratuita: `uv run mapsleads export-map affori.html --tile-url "https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=LA_TUA_CHIAVE"`.

@@ -35,10 +35,9 @@ html, body, #map { height: 100%; margin: 0; }
 <script>
 const STYLE = __STYLE__;
 const DATA = __DATA__;
+const TILES = __TILES__;
 const map = L.map("map");
-L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-  subdomains: "abcd", maxZoom: 19,
-  attribution: "&copy; OpenStreetMap contributors &copy; CARTO" }).addTo(map);
+L.tileLayer(TILES.url, { maxZoom: 19, attribution: TILES.attribution }).addTo(map);
 
 function popup(p) {
   const d = document.createElement("div"); d.className = "pop";
@@ -91,7 +90,25 @@ def _safe_json(obj: Any) -> str:
     return json.dumps(obj, ensure_ascii=False).replace("<", "\\u003c").replace("&", "\\u0026")
 
 
-def render(records: Iterable[Mapping[str, Any]], title: str = "Attività senza sito") -> str:
+# Default basemap: Esri World Street Map, no key needed for light use. OSM's own servers answer
+# 403 to pages opened from file:// and CARTO now asks for a key; pass tile_url to use another
+# provider (e.g. a free MapTiler or Stadia key).
+DEFAULT_TILE_URL = (
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/"
+    "{z}/{y}/{x}"
+)
+DEFAULT_ATTRIBUTION = (
+    "Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS; "
+    "data &copy; OpenStreetMap contributors"
+)
+
+
+def render(
+    records: Iterable[Mapping[str, Any]],
+    title: str = "Attività senza sito",
+    tile_url: str = DEFAULT_TILE_URL,
+    attribution: str = DEFAULT_ATTRIBUTION,
+) -> str:
     data = [
         {k: r.get(k) or "" for k in ("name", "category", "address", "phone", "verdict", "detail")}
         | {"lat": float(r["lat"]), "lon": float(r["lon"])}
@@ -103,6 +120,7 @@ def render(records: Iterable[Mapping[str, Any]], title: str = "Attività senza s
         TEMPLATE.replace("__TITLE__", title.replace("<", "&lt;"))
         .replace("__STYLE__", _safe_json(style))
         .replace("__DATA__", _safe_json(data))
+        .replace("__TILES__", _safe_json({"url": tile_url, "attribution": attribution}))
     )
 
 
@@ -110,8 +128,8 @@ def records_from_db(con: sqlite3.Connection) -> list[dict[str, Any]]:
     return [dict(r) for r in storage.all_rows(con) if r["verdict"]]
 
 
-def write(con: sqlite3.Connection, path: str) -> int:
+def write(con: sqlite3.Connection, path: str, tile_url: str = DEFAULT_TILE_URL) -> int:
     records = records_from_db(con)
     with open(path, "w", encoding="utf-8") as f:
-        f.write(render(records))
+        f.write(render(records, tile_url=tile_url))
     return len(records)
