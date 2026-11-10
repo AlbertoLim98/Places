@@ -29,7 +29,11 @@ def fetch(
     """1. Scarica le attività da OpenStreetMap (gratis)."""
     cfg = Settings()
     box = _bbox(area, bbox)
-    items = overpass.fetch(box, cfg.overpass_url, cfg.user_agent)
+    try:
+        items = overpass.fetch(box, cfg.overpass_url, cfg.user_agent)
+    except overpass.OverpassUnavailable as e:
+        typer.echo(f"Errore: {e}")
+        raise typer.Exit(1) from e
     con = storage.connect(cfg.db_path)
     new = storage.upsert(con, items, area if not bbox else "custom")
     typer.echo(f"{len(items)} attività trovate, {new} nuove.")

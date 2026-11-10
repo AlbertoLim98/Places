@@ -127,3 +127,50 @@ def test_area_presets_are_valid_boxes():
     for name, (s, w, n, e) in overpass.AREAS.items():
         assert s < n and w < e, name
         assert 45.3 < s < 45.6 and 9.0 < w < 9.3, name  # inside Milan
+
+
+class _Resp:
+    def __init__(self, status, elements=()):
+        self.status_code = status
+        self._elements = list(elements)
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise RuntimeError(self.status_code)
+
+    def json(self):
+        return {"elements": self._elements}
+
+
+class _Poster:
+    def __init__(self, statuses):
+        self.statuses = list(statuses)
+        self.urls = []
+
+    def post(self, url, **kw):
+        self.urls.append(url)
+        return _Resp(self.statuses.pop(0), ELEMENTS)
+
+
+BOX = (45.5, 9.1, 45.6, 9.2)
+
+
+def test_fetch_falls_back_to_mirror_on_502():
+    s = _Poster([502, 200])
+    items = overpass.fetch(BOX, "https://main", "ua", s, sleep=lambda _: None)
+    assert len(items) == 3
+    assert s.urls[0] == "https://main" and s.urls[1] in overpass.MIRRORS
+
+
+def test_fetch_gives_up_with_clear_error():
+    s = _Poster([502] * 9)
+    with pytest.raises(overpass.OverpassUnavailable):
+        overpass.fetch(BOX, "https://main", "ua", s, sleep=lambda _: None)
+    assert len(s.urls) == 9  # 3 rounds x 3 servers
+
+
+def test_fetch_does_not_retry_client_errors():
+    s = _Poster([400])
+    with pytest.raises(RuntimeError):
+        overpass.fetch(BOX, "https://main", "ua", s, sleep=lambda _: None)
+    assert len(s.urls) == 1

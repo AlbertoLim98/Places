@@ -1,3 +1,6 @@
+import time
+from collections.abc import Callable
+
 import requests
 
 from .domain import Business
@@ -62,15 +65,43 @@ def parse(elements: list[dict]) -> list[Business]:
     return out
 
 
+# Public mirrors tried after the configured URL when a server is overloaded.
+MIRRORS = (
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+)
+RETRY_STATUS = {429, 502, 503, 504}
+
+
+class OverpassUnavailable(Exception):
+    pass
+
+
 def fetch(
     bbox: tuple[float, float, float, float],
     url: str,
     user_agent: str,
     session: requests.Session | None = None,
+    rounds: int = 3,
+    sleep: Callable[[float], None] = time.sleep,
 ) -> list[Business]:
+    """POST the query, retrying overloaded servers (429/5xx) and falling back to mirrors."""
     s = session or requests.Session()
-    resp = s.post(
-        url, data={"data": build_query(bbox)}, headers={"User-Agent": user_agent}, timeout=120
-    )
-    resp.raise_for_status()
-    return parse(resp.json().get("elements", []))
+    urls = [url, *(m for m in MIRRORS if m != url)]
+    data = {"data": build_query(bbox)}
+    last = ""
+    for attempt in range(rounds):
+        for u in urls:
+            try:
+                resp = s.post(u, data=data, headers={"User-Agent": user_agent}, timeout=120)
+            except (requests.ConnectionError, requests.Timeout) as e:
+                last = f"{u}: {e.__class__.__name__}"
+                continue
+            if resp.status_code in RETRY_STATUS:
+                last = f"{u}: HTTP {resp.status_code}"
+                continue
+            resp.raise_for_status()
+            return parse(resp.json().get("elements", []))
+        if attempt < rounds - 1:
+            sleep(10 * (attempt + 1))
+    raise OverpassUnavailable(f"tutti i server Overpass sono occupati, riprova tra poco ({last})")
