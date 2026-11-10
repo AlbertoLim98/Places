@@ -36,8 +36,9 @@ html, body, #map { height: 100%; margin: 0; }
 const STYLE = __STYLE__;
 const DATA = __DATA__;
 const map = L.map("map");
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19, attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  subdomains: "abcd", maxZoom: 19,
+  attribution: "&copy; OpenStreetMap contributors &copy; CARTO" }).addTo(map);
 
 function popup(p) {
   const d = document.createElement("div"); d.className = "pop";

@@ -191,3 +191,11 @@ def test_map_render(con, tmp_path):
     pipeline.classify_all(con, FakeSession(alive=["verdi.it"]))
     n = mapview.write(con, str(tmp_path / "m.html"))
     assert n == 3 and "Da verificare" in (tmp_path / "m.html").read_text(encoding="utf-8")
+
+
+def test_map_does_not_use_blocked_osm_tile_server():
+    from mapsleads import mapview
+
+    html = mapview.render([])
+    assert "tile.openstreetmap.org" not in html  # 403s pages opened from file://
+    assert "basemaps.cartocdn.com" in html
