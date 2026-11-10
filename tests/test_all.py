@@ -121,3 +121,9 @@ def test_cli_export_takes_positional_path(tmp_path, monkeypatch):
     result = CliRunner().invoke(app, ["export-xlsx", str(out)])
     assert result.exit_code == 0, result.output
     assert out.exists()
+
+
+def test_area_presets_are_valid_boxes():
+    for name, (s, w, n, e) in overpass.AREAS.items():
+        assert s < n and w < e, name
+        assert 45.3 < s < 45.6 and 9.0 < w < 9.3, name  # inside Milan

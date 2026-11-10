@@ -23,7 +23,7 @@ def _bbox(area: str, bbox: str | None) -> tuple[float, float, float, float]:
 
 @app.command()
 def fetch(
-    area: str = typer.Option("isola", help="isola | navigli | nolo"),
+    area: str = typer.Option("isola", help="isola | navigli | nolo | affori"),
     bbox: str = typer.Option(None, help="south,west,north,east (sovrascrive --area)"),
 ) -> None:
     """1. Scarica le attività da OpenStreetMap (gratis)."""

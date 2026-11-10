@@ -7,6 +7,7 @@ AREAS: dict[str, tuple[float, float, float, float]] = {
     "isola": (45.484, 9.185, 45.495, 9.198),
     "navigli": (45.445, 9.165, 45.456, 9.190),
     "nolo": (45.495, 9.205, 45.512, 9.235),
+    "affori": (45.508, 9.150, 45.528, 9.182),
 }
 
 # Categories worth contacting; anything else tagged amenity/shop (benches, ATMs…) is skipped.
