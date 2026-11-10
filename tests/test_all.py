@@ -174,3 +174,20 @@ def test_fetch_does_not_retry_client_errors():
     with pytest.raises(RuntimeError):
         overpass.fetch(BOX, "https://main", "ua", s, sleep=lambda _: None)
     assert len(s.urls) == 1
+
+
+def test_map_render(con, tmp_path):
+    from mapsleads import mapview
+
+    evil = '</script><img src=x onerror=alert(1)>'
+    html = mapview.render(
+        [{"name": evil, "lat": 45.5, "lon": 9.1, "verdict": "candidate", "detail": ""},
+         {"name": "ok", "lat": None, "lon": 9.1, "verdict": "candidate"}]
+    )
+    assert "</script><img" not in html and "\\u003c/script" in html
+    assert html.count('"name"') == 1  # the record without coordinates is dropped
+
+    storage.upsert(con, overpass.parse(ELEMENTS), "t")
+    pipeline.classify_all(con, FakeSession(alive=["verdi.it"]))
+    n = mapview.write(con, str(tmp_path / "m.html"))
+    assert n == 3 and "Da verificare" in (tmp_path / "m.html").read_text(encoding="utf-8")

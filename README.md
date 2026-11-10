@@ -49,3 +49,7 @@ Dati da scaricare per il pilota (Lambrate), tutti aperti e senza dati personali:
 
 Contatto: solo volantini non indirizzati ("Al residente") evitano il trattamento di dati
 personali; posta nominativa o ricerca dei nomi richiede una valutazione GDPR prima di partire.
+
+## Mappa
+`uv run mapsleads export-map mappa.html` crea una mappa interattiva (un colore per esito, con
+filtri e conteggi) da aprire nel browser. Serve internet per caricare le tessere della mappa.

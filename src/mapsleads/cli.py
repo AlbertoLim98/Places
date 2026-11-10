@@ -2,7 +2,7 @@ from collections import Counter
 
 import typer
 
-from . import export, overpass, pipeline, storage
+from . import export, mapview, overpass, pipeline, storage
 from .config import Settings
 from .garden import cli as garden_cli
 from .google_places import BudgetExceeded
@@ -76,6 +76,13 @@ def export_xlsx(path: str = typer.Argument("leads.xlsx", help="File Excel di out
     """4. Esporta in Excel con le statistiche della run."""
     counts = export.write(storage.connect(Settings().db_path), path)
     typer.echo(f"Scritto {path}: {dict(counts)}")
+
+
+@app.command()
+def export_map(path: str = typer.Argument("mappa.html", help="File HTML di output")) -> None:
+    """5. Mappa interattiva (un colore per esito), da aprire nel browser."""
+    n = mapview.write(storage.connect(Settings().db_path), path)
+    typer.echo(f"Scritta {path} con {n} attività.")
 
 
 @app.command()
